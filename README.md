@@ -54,6 +54,73 @@ Siga as etapas da ficha de atividade prática:
 4. **Criar o Composite.** Escreva a interface `ItemCurricular` com `getNome()`, `getCargaHoraria()` e `imprimir(int nivel)`. Faça `Disciplina` e `Modulo` a implementarem, com a coleção de `Modulo` passando a ser de `ItemCurricular`. A classe `GradeCurricular` deixa de existir: as operações passam a ser dos próprios itens.
 5. **Provar que funciona.** Acrescente um submódulo de **terceiro nível** (uma trilha de especialização dentro de um semestre) e verifique que nada no cliente precisou mudar.
 
+## Etapa 1 — A conta das subclasses de relatório
+
+### 1. Quantas subclasses existem hoje
+
+- **Onde está:** em `src/siga/`, todas as classes que estendem `RelatorioDeAlunos`.
+- **Contagem:** são **4 subclasses** para **3 características opcionais**: cabeçalho, numeração e marca d'água.
+
+| # | Subclasse | Cabeçalho | Numeração | Marca d'água |
+|---|---|:---:|:---:|:---:|
+| 1 | `RelatorioComCabecalho` | V | | |
+| 2 | `RelatorioComNumeracao` | | V | |
+| 3 | `RelatorioComCabecalhoENumeracao` | V | V | |
+| 4 | `RelatorioComCabecalhoENumeracaoEMarcaDagua` | V | V | V |
+
+A classe base `RelatorioDeAlunos` não entra nessa conta como subclasse: ela é o relatório sem nenhum opcional.
+
+### 2. O raciocínio de 2ⁿ
+
+Cada característica opcional é uma decisão independente de está no relatório ou não está, sim ou não. Para **n** características, cada uma com 2 possibilidades, o total de combinações é:
+
+```
+2 × 2 × ... × 2  (n vezes)  =  2ⁿ
+```
+
+Essa conta inclui a combinação "nenhum opcional", que é o próprio `RelatorioDeAlunos`. Portanto, o número de subclasses necessárias é **2ⁿ − 1**.
+
+**Com as 3 características atuais (n = 3):**
+
+```
+2³ = 8 combinações -> 1 relatório base + 7 subclasses
+```
+
+Hoje existem só 4 das 7 subclasses. Faltam as combinações que ninguém pediu ainda:
+
+- `RelatorioComMarcaDagua`
+- `RelatorioComCabecalhoEMarcaDagua`
+- `RelatorioComNumeracaoEMarcaDagua`
+
+### 3. Com uma quarta característica (rodapé com a data de emissão)
+
+**Com 4 características (n = 4):**
+
+```
+2⁴ = 16 combinações -> 1 relatório base + 15 subclasses
+```
+
+| Características (n) | Combinações (2ⁿ) | Subclasses necessárias (2ⁿ − 1) | Existem hoje | Faltariam |
+|:---:|:---:|:---:|:---:|:---:|
+| 3 | 8 | 7 | 4 | 3 |
+| 4 | 16 | 15 | 4 | **11** |
+
+Ou seja: pedir uma característica a mais, o rodapé, dobra o número de combinações, de 8 para 16. Seriam 11 classes novas só para cobrir as combinações, e o código do rodapé estaria copiado em 8 delas.
+
+### 4. Conclusão
+
+**O problema:** o número de classes cresce de forma exponencial (2ⁿ − 1), enquanto o número de comportamentos cresce de forma linear (n). Cada característica nova dobra o total, e cada comportamento fica duplicado em metade das classes (2ⁿ⁻¹), que é exatamente o deslize 2.
+
+**O que o Decorator muda:** cada característica vira **uma** classe decoradora, combinável em tempo de execução. O número de classes passa a ser **n**: 3 decoradores hoje e 4 com o rodapé, em vez de 7 e 15 subclasses.
+
+| Características (n) | Herança (2ⁿ − 1 subclasses) | Decorator (n decoradores) |
+|:---:|:---:|:---:|
+| 3 | 7 | 3 |
+| 4 | 15 | 4 |
+| 5 | 31 | 5 |
+
+**Observação:** a conta 2ⁿ considera só quais características estão presentes. Como a ordem de aplicação também muda o resultado, numerar antes ou depois de colocar o cabeçalho gera saídas diferentes, a herança precisaria de ainda mais classes para cobrir todas as variações. Com o Decorator, a ordem é só a ordem do empilhamento.
+
 ## Critério de sucesso
 
 Ao final, verifique que: (a) o texto do cabeçalho existe em **um único lugar** do projeto; (b) três características opcionais são atendidas por **três** classes, e não por oito; (c) a palavra `instanceof` **não aparece** em nenhum arquivo; (d) a coleção de `Modulo` é de `ItemCurricular`, e não de `Object` nem de `Disciplina`; e (e) a carga horária total continua sendo **340h** antes de você acrescentar o terceiro nível.
