@@ -1,0 +1,11 @@
+services:
+  siga-estruturais-ii:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: siga-estruturais-ii
+    # network_mode: none
+    volumes:
+      - ./src:/app/src
+    command: >
+      sh -c "javac -d bin src/siga/*.java && java -cp bin siga.Main"
