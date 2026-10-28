@@ -50,14 +50,40 @@ public class Main {
         curso.adicionar(segundo);
         curso.adicionar(new Disciplina("Projeto Integrador", 40));
 
-        curso.imprimir(1);
-        System.out.println("   Carga total: " + curso.getCargaHoraria() + "h");
+        System.out.println("   --- Dois niveis: curso > semestre > disciplina ---");
+        exibirEstrutura(curso);
         System.out.println("   >> DESLIZE 3 resolvido: o cliente chama as operacoes direto no");
         System.out.println("      item, sem perguntar o tipo. Cada item sabe se imprimir e");
         System.out.println("      calcular a propria carga; o modulo so repassa aos filhos.");
 
         System.out.println();
+        System.out.println("3) Terceiro nivel: trilha de especializacao dentro de um semestre");
+        // So a montagem muda: a trilha e um Modulo dentro do 2o semestre.
+        Modulo trilha = new Modulo("Trilha de especializacao: Mobile");
+        trilha.adicionar(new Disciplina("Desenvolvimento para Dispositivos Moveis", 80));
+        trilha.adicionar(new Disciplina("Interface e Experiencia do Usuario", 40));
+        segundo.adicionar(trilha);
+
+        System.out.println("   --- Tres niveis: curso > semestre > trilha > disciplina ---");
+        exibirEstrutura(curso);
+        System.out.println("   >> O cliente, exibirEstrutura, e o mesmo metodo chamado antes,");
+        System.out.println("      sem nenhuma alteracao. Modulo aceita outro Modulo porque a");
+        System.out.println("      colecao e de ItemCurricular, entao a profundidade nao importa.");
+
+        System.out.println();
         System.out.println("Sua tarefa: ver o README.md e a ficha de atividade pratica.");
+    }
+
+    /**
+     * Cliente da estrutura curricular: imprime a arvore e a carga total.
+     *
+     * Recebe um ItemCurricular e so usa as operacoes da interface, sem saber
+     * se e uma disciplina ou um modulo nem quantos niveis a estrutura tem.
+     * Por isso funciona igual com dois ou tres niveis.
+     */
+    private static void exibirEstrutura(ItemCurricular item) {
+        item.imprimir(1);
+        System.out.println("   Carga total: " + item.getCargaHoraria() + "h");
     }
 
     /** Imprime o relatorio com um titulo e recuo, linha por linha. */
