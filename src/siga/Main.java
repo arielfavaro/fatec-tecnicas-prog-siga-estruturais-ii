@@ -10,24 +10,31 @@ public class Main {
         System.out.println("=== SIGA - Aula 11: Decorator e Composite (codigo inicial) ===");
 
         System.out.println();
-        System.out.println("1) Relatorios: uma subclasse por combinacao");
+        System.out.println("1) Relatorios: decoradores empilhados sobre o mesmo relatorio");
+        Relatorio base = new RelatorioDeAlunos();
         Relatorio[] variantes = {
-            new RelatorioDeAlunos(),
-            new RelatorioComCabecalho(),
-            new RelatorioComNumeracao(),
-            new RelatorioComCabecalhoENumeracao(),
-            new RelatorioComCabecalhoENumeracaoEMarcaDagua()
+            base,
+            new ComCabecalho(base),
+            new ComNumeracao(base),
+            new ComCabecalho(new ComNumeracao(base)),
+            new ComMarcaDagua(new ComCabecalho(new ComNumeracao(base)))
         };
-        for (Relatorio r : variantes) {
-            System.out.println("   --- " + r.getClass().getSimpleName() + " ---");
+        String[] descricoes = {
+            "RelatorioDeAlunos",
+            "ComCabecalho",
+            "ComNumeracao",
+            "ComCabecalho(ComNumeracao)",
+            "ComMarcaDagua(ComCabecalho(ComNumeracao))"
+        };
+        for (int i = 0; i < variantes.length; i++) {
+            Relatorio r = variantes[i];
+            System.out.println("   --- " + descricoes[i] + " ---");
             for (String linha : r.gerar().split("\n")) {
                 System.out.println("   " + linha);
             }
         }
-        System.out.println("   >> DESLIZE 1: sao 4 subclasses para 3 caracteristicas opcionais,");
-        System.out.println("      e faltam as combinacoes que ninguem pediu ainda. Com 3 opcionais");
-        System.out.println("      independentes seriam 8 classes; com 4, seriam 16.");
-        System.out.println("   >> DESLIZE 2: o texto do cabecalho esta escrito em TRES classes.");
+        System.out.println("   >> DESLIZES 1 e 2 resolvidos: 3 decoradores atendem as 3 caracteristicas,");
+        System.out.println("      e cada comportamento esta escrito uma vez so.");
 
         System.out.println();
         System.out.println("2) Estrutura curricular percorrida com instanceof");
