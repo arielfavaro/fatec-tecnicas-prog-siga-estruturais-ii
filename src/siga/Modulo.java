@@ -4,30 +4,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Composto da estrutura curricular — hoje sem interface em comum com Disciplina.
+ * Composto do Composite: contém outros itens curriculares.
  *
- * DESLIZE 3 (parte A) — a coleção é de Object, porque não existe um tipo que
- * abranja tanto Disciplina quanto Modulo. O compilador deixa de ajudar, e a
- * responsabilidade de descobrir o tipo recai sobre quem percorre a estrutura.
+ * A coleção é de ItemCurricular, o tipo do componente. Por isso um módulo
+ * pode conter tanto disciplinas quanto outros módulos, em quantos níveis
+ * forem necessários, e as operações são repassadas aos filhos sem precisar
+ * descobrir o tipo de cada um.
  */
-public class Modulo {
+public class Modulo implements ItemCurricular {
 
     private final String nome;
-    private final List<Object> filhos = new ArrayList<>();
+    private final List<ItemCurricular> filhos = new ArrayList<>();
 
     public Modulo(String nome) {
         this.nome = nome;
     }
 
+    public void adicionar(ItemCurricular item) {
+        filhos.add(item);
+    }
+
+    public void remover(ItemCurricular item) {
+        filhos.remove(item);
+    }
+
+    @Override
     public String getNome() {
         return nome;
     }
 
-    public void adicionar(Object filho) {
-        filhos.add(filho);
+    /** A carga do módulo é a soma da carga dos filhos, seja qual for o tipo deles. */
+    @Override
+    public int getCargaHoraria() {
+        int total = 0;
+        for (ItemCurricular filho : filhos) {
+            total += filho.getCargaHoraria();
+        }
+        return total;
     }
 
-    public List<Object> getFilhos() {
-        return filhos;
+    @Override
+    public void imprimir(int nivel) {
+        String recuo = "  ".repeat(nivel);
+        System.out.println(recuo + "[" + nome + "]");
+        for (ItemCurricular filho : filhos) {
+            filho.imprimir(nivel + 1);
+        }
     }
 }

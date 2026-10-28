@@ -133,6 +133,20 @@ Os métodos `adicionar` e `remover` fazem sentido no composto, mas não na folha
 
 A apostila adota a primeira. Você pode adotar a outra — mas **justifique a escolha no README**. O que não vale é copiar uma das duas formas sem perceber que havia uma decisão a tomar.
 
+### Escolha adotada: `adicionar` e `remover` só em `Modulo`
+
+Segui a mesma forma da apostila: a interface `ItemCurricular` tem só as operações que fazem sentido para todo item, `getNome()`, `getCargaHoraria()` e `imprimir(int nivel)`. Os métodos `adicionar` e `remover` ficam apenas em `Modulo`.
+
+**Por que essa e não a outra:**
+
+1. **O erro aparece na compilação, não na execução.** Com os métodos só em `Modulo`, escrever `disciplina.adicionar(...)` nem compila. Se eles estivessem na interface, o código compilaria e o problema só apareceria quando a `Disciplina` lançasse a exceção, já com o programa rodando.
+
+2. **A folha cumpre todo o contrato da interface.** Qualquer `ItemCurricular`, seja `Disciplina` ou `Modulo`, responde a todos os métodos da interface de verdade. Não existe método que a folha "implementa" só para lançar `UnsupportedOperationException`, então trocar um item pelo outro não quebra quem usa a interface, que é o que o princípio de Liskov pede.
+
+3. **O custo da escolha quase não aparece no SIGA.** A desvantagem é que o cliente precisa saber que tem um `Modulo` para adicionar filhos. Aqui isso acontece só na montagem da estrutura, no `Main`, onde cada módulo já é criado com `new Modulo(...)` e guardado numa variável do tipo `Modulo`. Depois de montada, a estrutura é percorrida só pelas operações da interface, e nesse momento o cliente trata tudo como `ItemCurricular`, sem saber nem perguntar o tipo.
+
+**Quando a outra forma valeria mais:** se a estrutura fosse montada de forma genérica, por exemplo lida de um arquivo ou banco de dados, com o código recebendo itens como `ItemCurricular` e precisando adicionar filhos sem saber o tipo, a uniformidade de ter `adicionar` na interface passaria a compensar a perda de segurança de tipos. Não é o caso desta atividade.
+
 ## Padrão de entrega
 
 Conforme a ficha de atividade prática: identificadores em português, um arquivo `.java` por classe pública, código formatado, entrega no repositório Git com README e commits descritivos. O uso de IA para gerar o código é proibido nesta atividade (ver seção 5.3 da ficha).
