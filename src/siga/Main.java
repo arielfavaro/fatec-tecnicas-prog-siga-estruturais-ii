@@ -10,31 +10,29 @@ public class Main {
         System.out.println("=== SIGA - Aula 11: Decorator e Composite (codigo inicial) ===");
 
         System.out.println();
-        System.out.println("1) Relatorios: decoradores empilhados sobre o mesmo relatorio");
+        System.out.println("1) Relatorios: pilhas de decoradores sobre o mesmo RelatorioDeAlunos");
         Relatorio base = new RelatorioDeAlunos();
-        Relatorio[] variantes = {
-            base,
-            new ComCabecalho(base),
-            new ComNumeracao(base),
-            new ComCabecalho(new ComNumeracao(base)),
-            new ComMarcaDagua(new ComCabecalho(new ComNumeracao(base)))
-        };
-        String[] descricoes = {
-            "RelatorioDeAlunos",
-            "ComCabecalho",
-            "ComNumeracao",
-            "ComCabecalho(ComNumeracao)",
-            "ComMarcaDagua(ComCabecalho(ComNumeracao))"
-        };
-        for (int i = 0; i < variantes.length; i++) {
-            Relatorio r = variantes[i];
-            System.out.println("   --- " + descricoes[i] + " ---");
-            for (String linha : r.gerar().split("\n")) {
-                System.out.println("   " + linha);
-            }
-        }
-        System.out.println("   >> DESLIZES 1 e 2 resolvidos: 3 decoradores atendem as 3 caracteristicas,");
-        System.out.println("      e cada comportamento esta escrito uma vez so.");
+
+        // Pilha 1: numera primeiro, depois coloca o cabecalho por fora.
+        Relatorio cabecalhoSobreNumeracao = new ComCabecalho(new ComNumeracao(base));
+
+        // Pilha 2: mesma base e mesmos decoradores, com a ordem invertida.
+        Relatorio numeracaoSobreCabecalho = new ComNumeracao(new ComCabecalho(base));
+
+        // Pilha 3: a pilha 1 com a marca d'agua por fora de tudo.
+        Relatorio rascunho = new ComMarcaDagua(cabecalhoSobreNumeracao);
+
+        imprimirRelatorio("RelatorioDeAlunos (sem decoradores)", base);
+        imprimirRelatorio("Pilha 1: ComCabecalho(ComNumeracao(base))", cabecalhoSobreNumeracao);
+        imprimirRelatorio("Pilha 2: ComNumeracao(ComCabecalho(base))", numeracaoSobreCabecalho);
+        imprimirRelatorio("Pilha 3: ComMarcaDagua(ComCabecalho(ComNumeracao(base)))", rascunho);
+
+        System.out.println("   >> Pilhas 1 e 2 usam a mesma base e os mesmos decoradores, so");
+        System.out.println("      muda a ordem: na 1 so os alunos sao numerados; na 2 o");
+        System.out.println("      cabecalho tambem e numerado, porque ComNumeracao numera tudo");
+        System.out.println("      o que recebe, e ali ele recebe o relatorio ja com cabecalho.");
+        System.out.println("   >> A pilha 3 reaproveita a pilha 1 inteira: um decorador pode");
+        System.out.println("      envolver outro decorador, porque todos sao um Relatorio.");
 
         System.out.println();
         System.out.println("2) Estrutura curricular percorrida com instanceof");
@@ -61,5 +59,13 @@ public class Main {
 
         System.out.println();
         System.out.println("Sua tarefa: ver o README.md e a ficha de atividade pratica.");
+    }
+
+    /** Imprime o relatorio com um titulo e recuo, linha por linha. */
+    private static void imprimirRelatorio(String titulo, Relatorio relatorio) {
+        System.out.println("   --- " + titulo + " ---");
+        for (String linha : relatorio.gerar().split("\n")) {
+            System.out.println("   " + linha);
+        }
     }
 }
