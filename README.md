@@ -1,25 +1,28 @@
-# SIGA — Atividade de padrões estruturais II: Decorator e Composite (código inicial)
+# SIGA — Atividade de padrões estruturais II: Decorator e Composite
 
 **Técnicas de Programação II (TP2) · Aula 11** — CST em Desenvolvimento de Software Multiplataforma · Fatec de Porto Ferreira
 
-Este é o **código inicial** da atividade prática da Aula 11. Como no da aula anterior, ele compila e executa: o problema não é que esteja quebrado, é que não aguenta crescer. São **três deslizes de estrutura**, e os dois padrões da aula resolvem cada um deles.
+Repositório da atividade prática da Aula 11. O código inicial tinha três deslizes de estrutura: uma subclasse de relatório para cada combinação de características, o mesmo comportamento copiado em várias classes e uma estrutura curricular percorrida com `instanceof`. A refatoração aplica o padrão **Decorator** nos relatórios e o padrão **Composite** na estrutura curricular.
 
-## Estrutura do projeto
+## Estrutura final do projeto
 
 ```
 siga-estruturais-ii/
-└── src/
-    └── siga/
-        ├── Relatorio.java                 (interface da Aula 10; pronta)
-        ├── RelatorioDeAlunos.java         (relatório sem opcionais; pronto)
-        ├── RelatorioComCabecalho.java                      (deslizes 1 e 2)
-        ├── RelatorioComNumeracao.java                      (deslize 1)
-        ├── RelatorioComCabecalhoENumeracao.java            (deslizes 1 e 2)
-        ├── RelatorioComCabecalhoENumeracaoEMarcaDagua.java (deslizes 1 e 2)
-        ├── Disciplina.java                (folha, sem interface comum)
-        ├── Modulo.java                    (composto, sem interface comum — deslize 3)
-        ├── GradeCurricular.java           (travessia com instanceof — deslize 3)
-        └── Main.java                      (demonstra os três deslizes)
+├── src/
+│   └── siga/
+│       ├── Relatorio.java            (interface do relatório; componente do Decorator)
+│       ├── RelatorioDeAlunos.java    (relatório sem opcionais; componente concreto)
+│       ├── DecoradorRelatorio.java   (decorador abstrato: implementa e contém um Relatorio)
+│       ├── ComCabecalho.java         (decorador: cabeçalho institucional)
+│       ├── ComNumeracao.java         (decorador: numeração das linhas)
+│       ├── ComMarcaDagua.java        (decorador: marca d'água de rascunho)
+│       ├── ItemCurricular.java       (interface comum; componente do Composite)
+│       ├── Disciplina.java           (folha do Composite)
+│       ├── Modulo.java               (composto do Composite, com coleção de ItemCurricular)
+│       └── Main.java                 (cliente: monta as pilhas e a estrutura curricular)
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
 ```
 
 ## Como compilar e executar
@@ -34,9 +37,11 @@ javac -encoding UTF-8 -d bin src/siga/*.java
 java -cp bin siga.Main
 ```
 
-Execute antes de ler o restante deste arquivo: a saída **mostra os três deslizes acontecendo**.
+A saída mostra as pilhas de decoradores sobre o mesmo relatório e a estrutura curricular, primeiro com dois níveis e depois com a trilha de terceiro nível.
 
-## Os três deslizes propositais
+## Os três deslizes do código inicial
+
+O código inicial compilava e executava, mas não aguentava crescer. Estes eram os três deslizes, todos resolvidos nas etapas abaixo.
 
 | # | Deslize | Onde | Por que é um problema |
 |---|---|---|---|
@@ -44,15 +49,36 @@ Execute antes de ler o restante deste arquivo: a saída **mostra os três desliz
 | 2 | **Duplicação do comportamento** | `RelatorioComCabecalho`, `...ENumeracao`, `...EMarcaDagua` | O texto do cabeçalho está escrito em **três** classes, e o laço de numeração em três. Mude o nome da instituição e serão três edições — com chance real de esquecer uma. |
 | 3 | **Travessia com `instanceof`** | `Modulo` e `GradeCurricular` | Não existe um tipo comum a `Disciplina` e `Modulo`, então a coleção é de `Object` e o cliente precisa descobrir o tipo de cada elemento. A mesma cadeia de `instanceof` aparece em `calcularCarga` e em `imprimir`; uma terceira operação exigiria uma terceira cópia. E acrescentar um novo tipo de item obriga a revisitar todos esses pontos — o princípio aberto/fechado sendo violado. |
 
-## Sua tarefa
+## O que foi feito em cada etapa
 
-Siga as etapas da ficha de atividade prática:
+1. **Etapa 1 - A conta das subclasses:**
+   - Registrada na seção [Etapa 1 — A conta das subclasses de relatório](#etapa-1--a-conta-das-subclasses-de-relatório): 4 subclasses existentes para 3 características, 7 necessárias pela conta de 2ⁿ − 1 e 15 com uma quarta característica.
 
-1. **Fazer a conta.** Registre neste README quantas subclasses de relatório existem hoje e quantas seriam necessárias se a secretaria pedisse uma quarta característica (um rodapé com a data de emissão). Mostre o raciocínio de 2ⁿ.
-2. **Criar os decoradores.** Escreva a classe abstrata `DecoradorRelatorio`, que implementa `Relatorio` e contém um `Relatorio`, e as três subclasses `ComCabecalho`, `ComNumeracao` e `ComMarcaDagua`. Cada uma deve conter o seu comportamento **uma vez só**. Ao terminar, as quatro classes `RelatorioCom...` originais podem ser apagadas.
-3. **Empilhar.** No `Main`, monte pelo menos **duas pilhas diferentes** de decoradores sobre o mesmo `RelatorioDeAlunos` e imprima as duas saídas. Experimente inverter a ordem de `ComCabecalho` e `ComNumeracao` e observe o que muda.
-4. **Criar o Composite.** Escreva a interface `ItemCurricular` com `getNome()`, `getCargaHoraria()` e `imprimir(int nivel)`. Faça `Disciplina` e `Modulo` a implementarem, com a coleção de `Modulo` passando a ser de `ItemCurricular`. A classe `GradeCurricular` deixa de existir: as operações passam a ser dos próprios itens.
-5. **Provar que funciona.** Acrescente um submódulo de **terceiro nível** (uma trilha de especialização dentro de um semestre) e verifique que nada no cliente precisou mudar.
+2. **Etapa 2 - Decoradores:**
+   - Criada a classe abstrata `DecoradorRelatorio`, que implementa `Relatorio` e contém um `Relatorio`, repassando a chamada por padrão.
+   - Criados `ComCabecalho`, `ComNumeracao` e `ComMarcaDagua`, cada um com o seu comportamento escrito uma vez só. O texto do cabeçalho existe apenas em `ComCabecalho`.
+   - Removidas as quatro subclasses `RelatorioCom...`. Antes de apagar, a saída de cada combinação montada com decoradores foi comparada com a da subclasse equivalente, e as quatro eram idênticas.
+
+3. **Etapa 3 - Pilhas de decoradores:**
+   - No `Main`, três pilhas sobre o mesmo `RelatorioDeAlunos`:
+
+     | Pilha | Montagem | Saída |
+     |---|---|---|
+     | 1 | `ComCabecalho(ComNumeracao(base))` | cabeçalho sem número, alunos numerados de 1 a 3 |
+     | 2 | `ComNumeracao(ComCabecalho(base))` | tudo numerado de 1 a 6, inclusive o cabeçalho |
+     | 3 | `ComMarcaDagua(pilha 1)` | a pilha 1 com a marca d'água no final |
+
+   - As pilhas 1 e 2 têm os mesmos decoradores em ordem invertida, e a saída muda: o decorador de fora recebe o resultado do de dentro, então na pilha 2 `ComNumeracao` recebe o relatório já com cabeçalho e numera tudo.
+
+4. **Etapa 4 - Composite:**
+   - Criada a interface `ItemCurricular` com `getNome()`, `getCargaHoraria()` e `imprimir(int nivel)`.
+   - `Disciplina` passou a ser a folha e `Modulo` o composto, com a coleção do tipo `List<ItemCurricular>`. O módulo calcula a carga e se imprime repassando as chamadas aos filhos.
+   - Removida a classe `GradeCurricular`: as operações passaram a ser dos próprios itens, sem `instanceof`.
+   - `adicionar` e `remover` ficaram só em `Modulo`; a justificativa está em [Uma decisão que é sua](#uma-decisão-que-é-sua).
+
+5. **Etapa 5 - Terceiro nível:**
+   - O cliente da estrutura é o método `exibirEstrutura(ItemCurricular)` no `Main`, que só usa as operações da interface.
+   - Ele é chamado com a estrutura de dois níveis, que dá 340h, e depois de acrescentar a "Trilha de especializacao: Mobile", um `Modulo` dentro do 2º semestre, que dá 460h. As duas saídas vêm da mesma chamada, sem alteração no cliente nem em `ItemCurricular`, `Disciplina` ou `Modulo`.
 
 ## Etapa 1 — A conta das subclasses de relatório
 
@@ -121,9 +147,13 @@ Ou seja: pedir uma característica a mais, o rodapé, dobra o número de combina
 
 **Observação:** a conta 2ⁿ considera só quais características estão presentes. Como a ordem de aplicação também muda o resultado, numerar antes ou depois de colocar o cabeçalho gera saídas diferentes, a herança precisaria de ainda mais classes para cobrir todas as variações. Com o Decorator, a ordem é só a ordem do empilhamento.
 
-## Critério de sucesso
+## Critérios de sucesso atendidos
 
-Ao final, verifique que: (a) o texto do cabeçalho existe em **um único lugar** do projeto; (b) três características opcionais são atendidas por **três** classes, e não por oito; (c) a palavra `instanceof` **não aparece** em nenhum arquivo; (d) a coleção de `Modulo` é de `ItemCurricular`, e não de `Object` nem de `Disciplina`; e (e) a carga horária total continua sendo **340h** antes de você acrescentar o terceiro nível.
+- [x] **(a)** O texto do cabeçalho existe em um único lugar do projeto: a constante `CABECALHO` em `ComCabecalho`.
+- [x] **(b)** As três características opcionais são atendidas por três classes, `ComCabecalho`, `ComNumeracao` e `ComMarcaDagua`, e não por oito.
+- [x] **(c)** A palavra `instanceof` não aparece em nenhum arquivo `.java`.
+- [x] **(d)** A coleção de `Modulo` é `List<ItemCurricular>`, e não de `Object` nem de `Disciplina`.
+- [x] **(e)** A carga horária total continua sendo 340h antes de acrescentar o terceiro nível; com a trilha, passa a 460h.
 
 > O item (d) é o que decide se o Composite ficou de pé. Se a coleção fosse de `Disciplina`, um módulo não poderia conter outro módulo, e a estrutura ficaria limitada a dois níveis — a etapa 5 não passaria.
 
@@ -146,6 +176,18 @@ Segui a mesma forma da apostila: a interface `ItemCurricular` tem só as operaç
 3. **O custo da escolha quase não aparece no SIGA.** A desvantagem é que o cliente precisa saber que tem um `Modulo` para adicionar filhos. Aqui isso acontece só na montagem da estrutura, no `Main`, onde cada módulo já é criado com `new Modulo(...)` e guardado numa variável do tipo `Modulo`. Depois de montada, a estrutura é percorrida só pelas operações da interface, e nesse momento o cliente trata tudo como `ItemCurricular`, sem saber nem perguntar o tipo.
 
 **Quando a outra forma valeria mais:** se a estrutura fosse montada de forma genérica, por exemplo lida de um arquivo ou banco de dados, com o código recebendo itens como `ItemCurricular` e precisando adicionar filhos sem saber o tipo, a uniformidade de ter `adicionar` na interface passaria a compensar a perda de segurança de tipos. Não é o caso desta atividade.
+
+## Rodar via Docker Compose
+
+Pré-requisito: Docker e Docker Compose instalados.
+
+```bash
+# Buildar e executar o projeto
+docker compose up --build
+
+# Ou apenas executar (compilação automática via volume)
+docker compose up
+```
 
 ## Padrão de entrega
 

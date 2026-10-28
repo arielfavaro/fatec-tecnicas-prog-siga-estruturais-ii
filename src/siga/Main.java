@@ -1,13 +1,14 @@
 package siga;
 
 /**
- * Demonstra os três deslizes acontecendo. Execute e observe a saída:
- * é dela que partem as etapas da ficha de atividade prática.
+ * Monta pilhas de decoradores sobre o mesmo relatório
+ * e percorre a estrutura curricular com Composite, primeiro com dois níveis
+ * e depois com a trilha de terceiro nível.
  */
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("=== SIGA - Aula 11: Decorator e Composite (codigo inicial) ===");
+        System.out.println("=== SIGA - Aula 11: Decorator e Composite ===");
 
         System.out.println();
         System.out.println("1) Relatorios: pilhas de decoradores sobre o mesmo RelatorioDeAlunos");
@@ -69,9 +70,6 @@ public class Main {
         System.out.println("   >> O cliente, exibirEstrutura, e o mesmo metodo chamado antes,");
         System.out.println("      sem nenhuma alteracao. Modulo aceita outro Modulo porque a");
         System.out.println("      colecao e de ItemCurricular, entao a profundidade nao importa.");
-
-        System.out.println();
-        System.out.println("Sua tarefa: ver o README.md e a ficha de atividade pratica.");
     }
 
     /**
